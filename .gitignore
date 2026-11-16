@@ -30,3 +30,4 @@ __pycache__/
 
 # ruleset for github actions
 ruleset.json
+ruleset.sh
