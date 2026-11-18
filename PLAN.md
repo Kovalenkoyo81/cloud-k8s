@@ -51,22 +51,24 @@
 ### 0. Репозиторий и аккаунты
 - [x] **0.1** `git init`, первый коммит, проверить что `GOAL.md`/`STATUS.md`/`CLAUDE.md` не попали в git
 - [x] **0.2** Репозиторий на GitHub (публичный), push, CI зелёный
-- [ ] **0.3** Ruleset на `main`: только через PR, обязательные проверки CI
-- [ ] **0.4** Oracle: регистрация, **home region Madrid** (не меняется!)
-- [ ] **0.5** Oracle: проверить доступность `VM.Standard.A1.Flex` и квоты Always Free (A1, NLB, Object Storage, KMS)
-- [ ] **0.6** Oracle: Budget с алертом на почту при трате > $1
-- [ ] **0.7** AWS: регистрация, **Free plan**, MFA на root
-- [ ] **0.8** AWS: IAM-пользователь для работы (не root), Budget с алертом $1
-- [ ] **0.9** GCP — **не регистрировать до шага 4.1** (90 дней кредитов стартуют с регистрации)
+- [x] **0.3** Ruleset на `main`: только через PR, обязательные проверки CI
+- [x] **0.4** Oracle: регистрация, **home region Madrid** (не меняется!)
+- [x] **0.5** Oracle: проверить доступность `VM.Standard.A1.Flex` и квоты Always Free (A1, NLB, Object Storage, KMS)
+- [x] **0.6** Oracle: Budget с алертом на почту при трате > $1
+- [x] **0.7** AWS: регистрация, **Free plan**, MFA на root
+- [x] **0.8** AWS: Budget (zero spend, кредиты исключены фильтром Charge type). Доступ Terraform → перенесён в 1.7
+- [x] **0.9** GCP — **не регистрировать до шага 4.1** (90 дней кредитов стартуют с регистрации)
 
 ### 1. Terraform — фундамент
-- [ ] **1.1** OCI: пользователь/API-ключ для Terraform, Customer Secret Key для S3-API
-- [ ] **1.2** `terraform/bootstrap/`: бакет для state в OCI Object Storage (локальный state, не в git)
-- [ ] **1.3** `terraform/envs/lab/`: S3-backend → OCI, `use_lockfile = true`
-- [ ] **1.4** Тест блокировки: два параллельных `terraform plan` — второй падает на lock
-- [ ] **1.5** Модуль `oci-worker`: VCN, subnet, security list (51820/udp + порты прокси), 2 × A1
-- [ ] **1.6** Модуль `aws-worker`: VPC, security group, 1 ВМ
-- [ ] **1.7** Outputs: имена, публичные и приватные IP
+- [x] **1.1** OCI: compartment `cloud-k8s`, группа и пользователь `terraform` (только API key + Customer secret key), политика, `~/.oci/config` (профиль `cloud-k8s`), `~/.aws/credentials` (профиль `oci-cloud-k8s`)
+- [ ] **1.2** `terraform/bootstrap/` (локальный state, не в git): провайдер `oci`, проверка доступа (namespace Object Storage)
+- [ ] **1.3** bootstrap: квоты Always Free (`oci_limits_quota`): A1 ≤ 2 OCPU / 12 GB, остальные shapes ВМ = 0
+- [ ] **1.4** bootstrap: бакет для state в OCI Object Storage (версионирование)
+- [ ] **1.5** `terraform/envs/lab/`: S3-backend → OCI, `use_lockfile = true`
+- [ ] **1.6** Тест блокировки: два параллельных `terraform plan` — второй падает на lock
+- [ ] **1.7** Модуль `oci-worker`: VCN, subnet, security list (51820/udp + порты прокси), 2 × A1
+- [ ] **1.8** AWS: включить opt-in регион eu-south-2; доступ Terraform через временные учётные данные (роль/сессия, не постоянные ключи); модуль `aws-worker`: VPC, security group, 1 ВМ
+- [ ] **1.9** Outputs: имена, публичные и приватные IP
 
 ### 2. NetBox — источник правды
 - [ ] **2.1** NetBox в Docker на ноутбуке, бэкап `pg_dump` по расписанию
@@ -137,7 +139,9 @@
 - [ ] **10.3** PREP.md: заготовка «могу показать экран» под этот репозиторий
 
 ## Риски
-- Oracle: отказ в регистрации по карте, «out of capacity» на A1 → запас: воркеры на AWS-кредитах
+- Oracle: «out of capacity» на A1 → запас: воркеры на AWS-кредитах
+- **Oracle, 2026-12-17 — конец триала:** если на A1 в сумме > 2 OCPU / 12 GB, отключаются ВСЕ A1-инстансы и удаляются через 30 дней; Object Storage > 20 GB удаляется. К этой дате — не больше 2/12
+- **Oracle idle reclamation:** Always Free ВМ с 95-м перцентилем CPU, сети и памяти < 20% за 7 дней может быть удалена. Варианты: Pay As You Go (по словам сообщества — не чистится, в документации не подтверждено) — решить до 2026-12-17
 - GCP: кластер живёт ~90 дней → всё в Terraform, шаг 10.2 обязателен
 - Условия free tier меняются (Oracle урезал A1 в июне 2026) — перепроверять при регистрации
 - vps1 одновременно воркер и хост рилея: firewall-изменения не должны закрыть 8443
