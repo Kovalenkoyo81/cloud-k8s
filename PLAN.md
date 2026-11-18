@@ -49,8 +49,8 @@
 ## Этапы
 
 ### 0. Репозиторий и аккаунты
-- [ ] **0.1** `git init`, первый коммит, проверить что `GOAL.md`/`STATUS.md`/`CLAUDE.md` не попали в git
-- [ ] **0.2** Репозиторий на GitHub (публичный), push, CI зелёный
+- [x] **0.1** `git init`, первый коммит, проверить что `GOAL.md`/`STATUS.md`/`CLAUDE.md` не попали в git
+- [x] **0.2** Репозиторий на GitHub (публичный), push, CI зелёный
 - [ ] **0.3** Ruleset на `main`: только через PR, обязательные проверки CI
 - [ ] **0.4** Oracle: регистрация, **home region Madrid** (не меняется!)
 - [ ] **0.5** Oracle: проверить доступность `VM.Standard.A1.Flex` и квоты Always Free (A1, NLB, Object Storage, KMS)

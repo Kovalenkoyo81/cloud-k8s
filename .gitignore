@@ -27,3 +27,7 @@ crash.log
 *.retry
 __pycache__/
 .ansible/
+
+# ruleset for github actions
+ruleset.json
+ruleset.sh
