@@ -31,3 +31,8 @@ __pycache__/
 # ruleset for github actions
 ruleset.json
 ruleset.sh
+
+# KEYS
+*.pem
+*.rsa
+*.key
