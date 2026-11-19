@@ -61,7 +61,7 @@
 
 ### 1. Terraform — фундамент
 - [x] **1.1** OCI: compartment `cloud-k8s`, группа и пользователь `terraform` (только API key + Customer secret key), политика, `~/.oci/config` (профиль `cloud-k8s`), `~/.aws/credentials` (профиль `oci-cloud-k8s`)
-- [ ] **1.2** `terraform/bootstrap/` (локальный state, не в git): провайдер `oci`, проверка доступа (namespace Object Storage)
+- [x] **1.2** `terraform/bootstrap/` (локальный state, не в git): провайдер `oci`, проверка доступа (namespace Object Storage)
 - [ ] **1.3** bootstrap: квоты Always Free (`oci_limits_quota`): A1 ≤ 2 OCPU / 12 GB, остальные shapes ВМ = 0
 - [ ] **1.4** bootstrap: бакет для state в OCI Object Storage (версионирование)
 - [ ] **1.5** `terraform/envs/lab/`: S3-backend → OCI, `use_lockfile = true`
@@ -142,6 +142,6 @@
 - Oracle: «out of capacity» на A1 → запас: воркеры на AWS-кредитах
 - **Oracle, 2026-12-17 — конец триала:** если на A1 в сумме > 2 OCPU / 12 GB, отключаются ВСЕ A1-инстансы и удаляются через 30 дней; Object Storage > 20 GB удаляется. К этой дате — не больше 2/12
 - **Oracle idle reclamation:** Always Free ВМ с 95-м перцентилем CPU, сети и памяти < 20% за 7 дней может быть удалена. Варианты: Pay As You Go (по словам сообщества — не чистится, в документации не подтверждено) — решить до 2026-12-17
-- GCP: кластер живёт ~90 дней → всё в Terraform, шаг 10.2 обязателен
+- GCP: кластер живёт ~90 дней → всё в Terraform, шаг 10.2 обязателен. **Продление:** перед концом срока GCP — миграция control plane в AWS на живом кластере (join мастера в AWS → удалить мастер GCP, ×3; кворум etcd держится). AWS-кредитов (~$120–200) на 3 мастера хватит на ~2–3.5 мес
 - Условия free tier меняются (Oracle урезал A1 в июне 2026) — перепроверять при регистрации
 - vps1 одновременно воркер и хост рилея: firewall-изменения не должны закрыть 8443
