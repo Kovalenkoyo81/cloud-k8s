@@ -61,5 +61,5 @@
     name: firewall
     enabled: true
     daemon_reload: true
-  # В --check юнит ещё не записан на диск
+  # In --check mode the unit is not written to disk yet
   ignore_errors: "{{ ansible_check_mode }}"

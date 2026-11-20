@@ -1,25 +1,25 @@
-# Личные заметки: имена, планы поиска работы, детали рилея — не для публичного репозитория
+# Personal notes — not for a public repository
 GOAL.md
 STATUS.md
 CLAUDE.md
 
 # --- Terraform ---
-# состояние — в нём бывают секреты открытым текстом
+# state may contain secrets in plain text
 *.tfstate
 *.tfstate.*
 
-# скачанные провайдеры, сотни мегабайт
+# downloaded providers, hundreds of megabytes
 .terraform/
 
-# переменные окружения, часто с чувствительными значениями
+# variable values, often sensitive
 *.tfvars
 *.auto.tfvars
 
-# сохранённые планы
+# saved plans
 tfplan
 *.tfplan
 
-# логи
+# logs
 crash.log
 
 # --- Ansible ---

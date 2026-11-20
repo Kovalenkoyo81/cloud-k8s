@@ -1,34 +1,34 @@
 # admin_user
 
-Пользователь для администрирования и закрытие входа под root.
+An administration user, and root login locked down.
 
-- создаёт `admin_user_name` (по умолчанию `devops`) в группе `sudo`;
-  sudo — по паролю; пароль и его хэш хранятся в vault, у каждого хоста свои
-- добавляет публичные ключи из `admin_user_authorized_keys` (к существующим,
-  не заменяя их — чтобы не отрезать доступ с других машин)
-- `/etc/ssh/sshd_config.d/10-hardening.conf`: вход по паролю запрещён,
-  root по SSH запрещён; конфиг проверяется `sshd -t` до записи
-- после reload проверяется новое подключение
+- creates `admin_user_name` (default `devops`) in the `sudo` group;
+  sudo requires a password; the password and its hash live in vault, per host
+- adds public keys from `admin_user_authorized_keys` (appended to the existing
+  ones, not replacing them — so access from other machines is not cut off)
+- `/etc/ssh/sshd_config.d/10-hardening.conf`: password login disabled,
+  root over SSH disabled; the config is checked with `sshd -t` before writing
+- after the reload a new connection is tested
 
-## Защита от самоблокировки
+## Self-lockout protection
 
-Пока Ansible подключён под root, полностью запретить root нельзя — роль
-отрезала бы сама себя. В этом случае ставится `PermitRootLogin prohibit-password`
-(root только по ключу). Полный запрет — при следующем запуске уже под
+While Ansible connects as root, root cannot be disabled completely — the role
+would lock itself out. In that case `PermitRootLogin prohibit-password` is set
+(root by key only). Full lockdown happens on the next run, already as
 `admin_user_name`.
 
-Первый запуск на хосте, где есть только root:
+First run on a host that only has root:
 
 ```bash
 ansible-playbook playbooks/access.yml --limit <host> -e ansible_user=root
-ansible-playbook playbooks/access.yml --limit <host>      # уже под devops
+ansible-playbook playbooks/access.yml --limit <host>      # now as devops
 ```
 
-## Переменные
+## Variables
 
-| Переменная                   | По умолчанию     |
+| Variable                     | Default          |
 |------------------------------|------------------|
 | `admin_user_name`            | `devops`         |
 | `admin_user_groups`          | `[sudo]`         |
 | `admin_user_authorized_keys` | `[]`             |
-| `admin_user_password_hash`   | не задан — пароль не меняется |
+| `admin_user_password_hash`   | unset — the password is not changed |

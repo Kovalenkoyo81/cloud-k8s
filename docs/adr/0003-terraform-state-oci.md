@@ -1,17 +1,17 @@
-# 0003. Terraform state в OCI Object Storage
+# 0003. Terraform state in OCI Object Storage
 
-**Статус:** принято, блокировку проверить
+**Status:** accepted, locking to be verified
 
-## Контекст
+## Context
 
-State должен пережить облака, которыми управляет: GCP и AWS здесь временные (кредиты). Варианты: бакет в одном из облаков, GitLab-managed state, HCP Terraform.
+The state must outlive the clouds it manages: GCP and AWS are temporary here (credits). Options: a bucket in one of the clouds, GitLab-managed state, HCP Terraform.
 
-## Решение
+## Decision
 
-S3-backend, указывающий на S3-совместимый API OCI Object Storage (Always Free, бессрочно). Блокировка — `use_lockfile = true` (нативная, Terraform ≥ 1.10, без DynamoDB). Бакет создаёт отдельная конфигурация `terraform/bootstrap/` с локальным state.
+An S3 backend pointing at the S3-compatible API of OCI Object Storage (Always Free, no expiry). Locking via `use_lockfile = true` (native, Terraform ≥ 1.10, no DynamoDB). The bucket is created by a separate configuration, `terraform/bootstrap/`, with local state.
 
-## Последствия
+## Consequences
 
-- State не зависит от временных облаков.
-- Нужна проверка: поддерживает ли API OCI условную запись (`If-None-Match`), на которой держится блокировка. Тест — два параллельных `terraform plan`.
-- Если не поддерживает — переход на GitLab-managed state.
+- The state does not depend on the temporary clouds.
+- To verify: whether the OCI API supports conditional writes (`If-None-Match`), which locking relies on. Test: two parallel `terraform plan` runs.
+- If it does not — switch to GitLab-managed state.

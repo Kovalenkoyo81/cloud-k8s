@@ -1,6 +1,6 @@
 ---
-# Применение правил с откатом: если после применения нельзя подключиться
-# заново, таймер через firewall_rollback_timeout секунд снимет правила сам.
+# Apply rules with a rollback: if a new connection fails after applying,
+# a timer removes the rules after firewall_rollback_timeout seconds.
 
 - name: Remove stale rollback timer
   ansible.builtin.systemd_service:
@@ -22,8 +22,8 @@
     state: restarted
     daemon_reload: true
 
-# Текущая SSH-сессия уже в ESTABLISHED и переживёт любые правила.
-# Проверять нужно новое подключение — через wg0, единственный вход на хост.
+# The current SSH session is already ESTABLISHED and survives any rules.
+# Test a new connection — through wg0, the only way into the host.
 - name: Drop current SSH connection
   ansible.builtin.meta: reset_connection
 
@@ -36,7 +36,7 @@
     name: firewall-rollback.timer
     state: stopped
 
-# Доступ подтверждён. Теперь убедиться, что снаружи SSH действительно закрыт.
+# Access confirmed. Now make sure SSH is really closed from outside.
 - name: Check that SSH on public address is closed
   ansible.builtin.wait_for:
     host: "{{ firewall_public_address }}"

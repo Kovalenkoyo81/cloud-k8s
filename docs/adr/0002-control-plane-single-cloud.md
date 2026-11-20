@@ -1,17 +1,17 @@
-# 0002. Control plane в одном облаке, воркеры — где угодно
+# 0002. Control plane in a single cloud, workers anywhere
 
-**Статус:** принято
+**Status:** accepted
 
-## Контекст
+## Context
 
-Узлы в трёх облаках и на VPS. etcd подтверждает запись большинством (Raft): при задержке между членами в десятки миллисекунд растут задержки записи и случаются ложные перевыборы лидера. kubelet к задержке до API-сервера терпим.
+Nodes live in three clouds and on a VPS. etcd commits a write once a majority confirms it (Raft): with tens of milliseconds of latency between members, write latency grows and spurious leader elections happen. kubelet tolerates latency to the API server.
 
-## Решение
+## Decision
 
-Три мастера (etcd ×3) — в одном регионе GCP (Мадрид), в разных зонах. Воркеры — в Oracle, AWS и на VPS, связь через WireGuard.
+Three masters (etcd ×3) in one GCP region (Madrid), in different zones. Workers in Oracle, AWS and on the VPS, connected over WireGuard.
 
-## Последствия
+## Consequences
 
-- Кворум переживает потерю одного мастера или одной зоны, но не всего региона GCP.
-- Срок жизни control plane ограничен кредитами GCP (~90 дней) — кластер должен подниматься с нуля из кода.
-- Бесплатных ВМ с 2 GB RAM на три мастера в Always Free нет ни у одного провайдера.
+- Quorum survives the loss of one master or one zone, but not of the whole GCP region.
+- Control plane lifetime is limited by GCP credits (~90 days) — the cluster must be rebuildable from code.
+- No provider's Always Free tier offers three VMs with 2 GB RAM for the masters.

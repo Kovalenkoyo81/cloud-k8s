@@ -1,7 +1,7 @@
 #!/bin/sh
 # {{ ansible_managed }}
-# Запускается таймером, если после применения доступ не подтвердили.
-# Убирает переход на {{ firewall_chain }} и выключает автозагрузку правил.
+# Run by a timer if access was not confirmed after applying.
+# Removes the jump to {{ firewall_chain }} and disables loading the rules at boot.
 
 iptables -w -D INPUT -j {{ firewall_chain }} || true
 {% if firewall_ipv6 %}
