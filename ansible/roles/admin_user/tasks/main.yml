@@ -17,8 +17,8 @@
     key: "{{ item }}"
   loop: "{{ admin_user_authorized_keys }}"
 
-# Пока Ansible подключён под root, полностью запрещать root нельзя —
-# роль отрезала бы сама себя. Тогда root остаётся только по ключу.
+# While Ansible connects as root, root cannot be disabled completely —
+# the role would lock itself out. Root stays allowed, key only.
 - name: Install SSH hardening config
   ansible.builtin.template:
     src: hardening.conf.j2
@@ -32,8 +32,8 @@
 - name: Apply SSH config before checking access
   ansible.builtin.meta: flush_handlers
 
-# Текущее соединение уже установлено и переживёт reload.
-# Проверять нужно новое подключение.
+# The current connection is already established and survives a reload.
+# Test a new connection.
 - name: Drop current SSH connection
   ansible.builtin.meta: reset_connection
 

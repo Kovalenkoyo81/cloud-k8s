@@ -1,64 +1,64 @@
 # firewall
 
-Межсетевой экран на iptables для VPS, на котором работает k3s.
+An iptables firewall for a VPS running k3s.
 
-## Почему своя цепочка, а не полный набор правил
+## Why our own chain instead of a full ruleset
 
-k3s, flannel и kube-proxy держат в iptables свои цепочки (`KUBE-*`,
-`FLANNEL-*`, `CNI-*`). Полная загрузка `iptables-restore` их затрёт и сломает
-сеть кластера. Поэтому роль управляет только цепочкой `FIREWALL-INPUT`:
-загружает её через `iptables-restore --noflush` (атомарно, одной транзакцией)
-и ставит на неё переход первым правилом в `INPUT`.
+k3s, flannel and kube-proxy keep their own iptables chains (`KUBE-*`,
+`FLANNEL-*`, `CNI-*`). A full `iptables-restore` load would wipe them and break
+cluster networking. So the role manages only the `FIREWALL-INPUT` chain:
+it loads it with `iptables-restore --noflush` (atomically, in one transaction)
+and puts a jump to it as the first rule of `INPUT`.
 
-## Правила
+## Rules
 
-| Откуда                           | Что разрешено                    |
+| From                             | Allowed                          |
 |----------------------------------|----------------------------------|
-| `lo`, `wg0` (+ `cni0`, `flannel.1` на vps1) | всё                    |
-| интернет                         | WireGuard `51820/udp`, ICMP      |
-| ответы на свои соединения        | `ESTABLISHED,RELATED`            |
-| остальное                        | `DROP`                           |
+| `lo`, `wg0` (+ `cni0`, `flannel.1` on vps1) | everything             |
+| internet                         | WireGuard `51820/udp`, ICMP      |
+| replies to our own connections   | `ESTABLISHED,RELATED`            |
+| anything else                    | `DROP`                           |
 
-SSH снаружи закрыт: на хост можно попасть только через WireGuard. Prometheus,
-node_exporter, Grafana и API k3s тоже доступны только через `wg0`.
-IPv4 и IPv6 — одинаково.
+SSH is closed from outside: the host is reachable only through WireGuard.
+Prometheus, node_exporter, Grafana and the k3s API are also reachable only
+through `wg0`. IPv4 and IPv6 are handled the same way.
 
-**Аварийный доступ** при упавшем `wg0` — только консоль провайдера VPS.
+**Emergency access** when `wg0` is down — only the VPS provider's console.
 
-## Защита от потери доступа
+## Lockout protection
 
-1. Шаблон правил проверяется `iptables-restore --test` до записи на сервер.
-2. Перед применением через `systemd-run` ставится таймер отката на 5 минут.
-3. Правила применяются, текущее SSH-соединение сбрасывается.
-4. Проверяется новое подключение через `wg0`.
-5. Если подключиться удалось — таймер снимается. Если Ansible отрезало —
-   через 5 минут таймер уберёт переход на `FIREWALL-INPUT` и выключит
-   автозагрузку правил.
-6. С управляющей машины проверяется, что порт 22 на публичном адресе закрыт.
+1. The rules template is checked with `iptables-restore --test` before it is written to the server.
+2. Before applying, a 5-minute rollback timer is armed with `systemd-run`.
+3. The rules are applied, the current SSH connection is reset.
+4. A new connection through `wg0` is tested.
+5. If it succeeds, the timer is disarmed. If Ansible was cut off, after
+   5 minutes the timer removes the jump to `FIREWALL-INPUT` and disables
+   loading the rules at boot.
+6. The control machine checks that port 22 on the public address is closed.
 
-После перезагрузки правила загружает юнит `firewall.service` до поднятия сети.
+After a reboot the rules are loaded by `firewall.service` before networking comes up.
 
-## Связь с другими сервисами
+## Interaction with other services
 
-При любом изменении правил роль уведомляет `firewall changed`. Роль ничего не
-знает о том, кто это слушает: пересборка цепочек k3s описана handler'ом в
+On any rule change the role notifies `firewall changed`. The role knows nothing
+about who listens: rebuilding the k3s chains is a handler in
 `playbooks/firewall.yml`.
 
-Интерфейсы k3s (`cni0`, `flannel.1`) не входят в defaults роли — они заданы
-в `inventory/host_vars/vps1.yml`, там, где k3s действительно есть.
+The k3s interfaces (`cni0`, `flannel.1`) are not in the role defaults — they are
+set in `inventory/host_vars/vps1.yml`, where k3s actually runs.
 
-## Ограничения
+## Limitations
 
-- Сервисы, опубликованные через k3s ServiceLB (`hostPort`, Traefik на 80/443),
-  идут через DNAT в `PREROUTING` и `FORWARD`, а не через `INPUT`. Эта роль их
-  не закрывает.
-- Цепочка `FORWARD` не трогается — ей управляет k3s.
-- Проверка закрытого SSH идёт только по IPv4-адресу из
+- Services published through k3s ServiceLB (`hostPort`, Traefik on 80/443)
+  go through DNAT in `PREROUTING` and `FORWARD`, not through `INPUT`. This role
+  does not close them.
+- The `FORWARD` chain is left alone — k3s manages it.
+- The closed-SSH check only uses the IPv4 address from
   `ansible_facts['default_ipv4']`.
 
-## Переменные
+## Variables
 
-| Переменная                    | По умолчанию                     |
+| Variable                      | Default                          |
 |-------------------------------|----------------------------------|
 | `firewall_chain`              | `FIREWALL-INPUT`                 |
 | `firewall_trusted_interfaces` | `lo`, `wg0`                      |

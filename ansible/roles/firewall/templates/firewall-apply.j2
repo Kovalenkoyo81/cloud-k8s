@@ -1,6 +1,6 @@
 #!/bin/sh
 # {{ ansible_managed }}
-# Загружает цепочку {{ firewall_chain }} и вставляет переход на неё в начало INPUT
+# Loads the {{ firewall_chain }} chain and inserts a jump to it at the top of INPUT
 set -eu
 
 iptables-restore -w --noflush {{ firewall_config_dir }}/rules.v4

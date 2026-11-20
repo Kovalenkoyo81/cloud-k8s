@@ -17,8 +17,8 @@ concurrency:
 env:
   KUBERNETES_VERSION: "1.35.0"
 
-# Три job'а запускаются всегда, без фильтров по путям: required checks
-# с paths-фильтром на PR, который их не затрагивает, висят в ожидании вечно
+# All jobs always run, no path filters: a required check with a paths filter
+# stays "Expected — waiting" forever on a PR that does not touch those paths
 jobs:
   yamllint:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
       - name: terraform fmt
         run: terraform fmt -check -recursive
 
-      # Бэкенд в OCI из GitHub недоступен (и не нужен) — validate без него
+      # The OCI backend is not reachable from GitHub (and not needed) — validate without it
       - name: terraform validate
         run: |
           for root in bootstrap envs/lab; do
@@ -86,8 +86,8 @@ jobs:
       - name: install collections
         run: ansible-galaxy collection install -r collections/requirements.yml
 
-      # ansible.cfg указывает на ~/.vault_pass_homelab, которого здесь нет.
-      # Линтеры vault не расшифровывают, подойдёт любой пароль.
+      # ansible.cfg points to ~/.vault_pass_homelab, which does not exist here.
+      # Linters never decrypt vault, so any password will do.
       - name: dummy vault password
         run: echo "ci-dummy" > "$RUNNER_TEMP/vault_pass"
 
@@ -96,14 +96,14 @@ jobs:
           ANSIBLE_VAULT_PASSWORD_FILE: ${{ runner.temp }}/vault_pass
         run: ansible-lint
 
-      # TODO: syntax-check playbooks/site.yml — когда появится site.yml
+      # TODO: syntax-check playbooks/site.yml once it exists
 
   k8s:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # -strict: неизвестное поле (опечатка) — ошибка, а не тихий пропуск
+      # -strict: an unknown field (typo) is an error, not silently skipped
       - name: kubeconform
         run: >-
           docker run --rm -v "$PWD":/repo -w /repo

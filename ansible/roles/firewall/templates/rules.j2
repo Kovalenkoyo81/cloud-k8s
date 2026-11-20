@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
-# Загружается через ip{{ '6' if item == 6 else '' }}tables-restore --noflush:
-# меняется только своя цепочка, правила k3s не трогаются
+# Loaded with ip{{ '6' if item == 6 else '' }}tables-restore --noflush:
+# only our own chain changes, k3s rules are left untouched
 *filter
 :{{ firewall_chain }} - [0:0]
 -F {{ firewall_chain }}

@@ -1,17 +1,17 @@
-# 0001. kubeadm своими Ansible-ролями
+# 0001. kubeadm wrapped in our own Ansible roles
 
-**Статус:** принято
+**Status:** accepted
 
-## Контекст
+## Context
 
-Кластер нужно ставить воспроизводимо, кодом. Готовые варианты: kubespray (большой набор Ansible-ролей), k3s/RKE2 (дистрибутивы «всё в одном»), kubeadm (официальный инструмент, только bootstrap control plane).
+The cluster has to be installed reproducibly, as code. Ready-made options: kubespray (a large set of Ansible roles), k3s/RKE2 ("all-in-one" distributions), kubeadm (the official tool, bootstraps the control plane only).
 
-## Решение
+## Decision
 
-kubeadm, обёрнутый в собственные роли: `base` (подготовка узла), `kubernetes` (пакеты, init, join).
+kubeadm wrapped in our own roles: `base` (node preparation) and `kubernetes` (packages, init, join).
 
-## Последствия
+## Consequences
 
-- Каждый шаг виден и понятен: модули ядра, sysctl, containerd, сертификаты, join control plane — нет «магии» чужого плейбука.
-- Больше работы, чем kubespray; обновления и нюансы HA — на мне.
-- k3s отвергнут: SQLite/встроенный etcd и свои упрощения скрывают то, что нужно уметь эксплуатировать.
+- Every step is visible and understood: kernel modules, sysctl, containerd, certificates, control plane join — no "magic" from someone else's playbook.
+- More work than kubespray; upgrades and HA details are on me.
+- k3s rejected: SQLite/embedded etcd and its simplifications hide exactly what has to be operated.

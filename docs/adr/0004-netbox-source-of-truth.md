@@ -1,17 +1,17 @@
-# 0004. NetBox как источник правды для inventory
+# 0004. NetBox as the source of truth for inventory
 
-**Статус:** принято
+**Status:** accepted
 
-## Контекст
+## Context
 
-Узлы появляются и исчезают через Terraform в трёх облаках. Статический `hosts.yml` расходится с реальностью при каждом изменении.
+Nodes appear and disappear through Terraform in three clouds. A static `hosts.yml` drifts from reality with every change.
 
-## Решение
+## Decision
 
-Terraform при создании ВМ регистрирует её в NetBox (сайт, роль, IP). Ansible берёт хосты из NetBox через `netbox.netbox.nb_inventory`. NetBox работает в Docker на машине оператора — вне кластера, который он описывает.
+When Terraform creates a VM, it registers it in NetBox (site, role, IP). Ansible takes hosts from NetBox via `netbox.netbox.nb_inventory`. NetBox runs in Docker on the operator's machine — outside the cluster it describes.
 
-## Последствия
+## Consequences
 
-- Новый узел в Terraform сразу виден Ansible по роли — без ручной правки inventory.
-- CI до NetBox не достаёт: в CI только fmt/validate/lint, `plan` и прогоны — с машины оператора.
-- База NetBox — источник правды: регулярный `pg_dump` обязателен.
+- A new node in Terraform is immediately visible to Ansible by role — no manual inventory edits.
+- CI cannot reach NetBox: CI runs only fmt/validate/lint; `plan` and playbook runs happen from the operator's machine.
+- The NetBox database is the source of truth: a regular `pg_dump` is mandatory.

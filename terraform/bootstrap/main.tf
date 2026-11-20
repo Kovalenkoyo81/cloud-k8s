@@ -15,3 +15,14 @@ resource "oci_limits_quota" "always_free_compute" {
     "set compute-memory quota standard-a1-memory-count to 12 in tenancy"
   ]
 }
+
+resource "oci_objectstorage_bucket" "tf_state" {
+  compartment_id = var.compartment_ocid
+  name           = "cloud_k8s_tf_state"
+  namespace      = data.oci_objectstorage_namespace.this.namespace
+  versioning     = "Enabled"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
