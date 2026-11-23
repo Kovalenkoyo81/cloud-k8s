@@ -8,10 +8,16 @@ The state must outlive the clouds it manages: GCP and AWS are temporary here (cr
 
 ## Decision
 
-An S3 backend pointing at the S3-compatible API of OCI Object Storage (Always Free, no expiry). Locking via `use_lockfile = true` (native, Terraform ≥ 1.10, no DynamoDB). The bucket is created by a separate configuration, `terraform/bootstrap/`, with local state.
+The state is kept in OCI Object Storage (Always Free, no expiry) through the native `oci` backend (Terraform ≥ 1.12), one `key` per configuration (`bootstrap/terraform.tfstate`, `envs/lab/terraform.tfstate`).
+
+- **Not the S3-compatible API.** Oracle marks it deprecated in favour of the native backend, and it needs a separate secret (Customer Secret Key) on top of the API key that the provider already uses. The native backend authenticates with the same `~/.oci/config` profile.
+- **Locking** is built into the backend: before `plan`/`apply` it creates a `<key>.lock` object with `If-None-Match: *`, so a second run fails instead of overwriting the state.
+- **Bootstrap** (`terraform/bootstrap/`) creates the bucket itself, so its state starts local and is then moved into that bucket with `terraform init -migrate-state`.
 
 ## Consequences
 
 - The state does not depend on the temporary clouds.
-- To verify: whether the OCI API supports conditional writes (`If-None-Match`), which locking relies on. Test: two parallel `terraform plan` runs.
+- No credentials in the backend configuration; one secret (the API key) serves both the provider and the backend.
+- To verify: whether OCI Object Storage honours `If-None-Match` as the backend expects. Test: two parallel `terraform plan` runs.
 - If it does not — switch to GitLab-managed state.
+- Rebuilding from scratch needs the bootstrap order: comment out the backend, apply with local state, restore the backend, migrate.
