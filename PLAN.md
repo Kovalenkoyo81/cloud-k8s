@@ -66,7 +66,7 @@ A step with manual actions (console, keys, sign-ups) also updates the local manu
 - [x] **1.3** bootstrap: Always Free quotas (`oci_limits_quota`): A1 ≤ 2 OCPU / 12 GB, all other VM shapes = 0
 - [x] **1.4** bootstrap: state bucket in OCI Object Storage (versioning)
 - [x] **1.5** `terraform/envs/lab/`: native `oci` backend (ADR-0003); migrate bootstrap state into the bucket
-- [ ] **1.6** Locking test: two parallel `terraform plan` runs — the second fails on the lock
+- [x] **1.6** Locking test: a first `apply` holds the lock at the confirmation prompt, a second run fails on the lock
 - [ ] **1.7** Module `oci-worker`: VCN, subnet, security list (51820/udp + proxy ports), 2 × A1
 - [ ] **1.8** AWS: enable the opt-in region eu-south-2; Terraform access with temporary credentials (role/session, no long-lived keys); module `aws-worker`: VPC, security group, 1 VM
 - [ ] **1.9** Outputs: names, public and private IPs
