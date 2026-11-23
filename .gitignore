@@ -2,6 +2,8 @@
 GOAL.md
 STATUS.md
 CLAUDE.md
+# Draft until the final showcase commit (step 10.4)
+docs/bootstrap-manual.md
 
 # --- Terraform ---
 # state may contain secrets in plain text

@@ -2,6 +2,7 @@
 
 Region everywhere is Madrid (close to vps1). Clouds — Terraform, nodes — Ansible, cluster — manifests.
 Every step is closed by a commit through a PR with green CI.
+A step with manual actions (console, keys, sign-ups) also updates the local manual (`docs/bootstrap-manual.md`, kept out of git until step 10.4).
 
 ## Architecture
 
@@ -63,8 +64,8 @@ Every step is closed by a commit through a PR with green CI.
 - [x] **1.1** OCI: compartment `cloud-k8s`, group and user `terraform` (API key + Customer secret key only), policy, `~/.oci/config` (profile `cloud-k8s`), `~/.aws/credentials` (profile `oci-cloud-k8s`)
 - [x] **1.2** `terraform/bootstrap/` (local state, not in git): `oci` provider, access check (Object Storage namespace)
 - [x] **1.3** bootstrap: Always Free quotas (`oci_limits_quota`): A1 ≤ 2 OCPU / 12 GB, all other VM shapes = 0
-- [ ] **1.4** bootstrap: state bucket in OCI Object Storage (versioning)
-- [ ] **1.5** `terraform/envs/lab/`: S3 backend → OCI, `use_lockfile = true`
+- [x] **1.4** bootstrap: state bucket in OCI Object Storage (versioning)
+- [x] **1.5** `terraform/envs/lab/`: native `oci` backend (ADR-0003); migrate bootstrap state into the bucket
 - [ ] **1.6** Locking test: two parallel `terraform plan` runs — the second fails on the lock
 - [ ] **1.7** Module `oci-worker`: VCN, subnet, security list (51820/udp + proxy ports), 2 × A1
 - [ ] **1.8** AWS: enable the opt-in region eu-south-2; Terraform access with temporary credentials (role/session, no long-lived keys); module `aws-worker`: VPC, security group, 1 VM
@@ -137,6 +138,7 @@ Every breakage gets a runbook in `docs/runbooks/`: symptom → hypothesis → ch
 - [ ] **10.1** README: diagram, "why this way", links to ADRs and runbooks
 - [ ] **10.2** `terraform destroy` → `apply` → Ansible: cluster from scratch out of git, measure the time
 - [ ] **10.3** Prep notes: "let me share my screen" walkthrough of this repository
+- [ ] **10.4** Publish the manual: remove `docs/bootstrap-manual.md` from `.gitignore`, link it from README
 
 ## Backlog
 - Quota checks as code: `data "oci_limits_resource_availability"` + `check` blocks (A1 cores = 2, memory = 12) — catch "apply succeeded but the result is wrong"
